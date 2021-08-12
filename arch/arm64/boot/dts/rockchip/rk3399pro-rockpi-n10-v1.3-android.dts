@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+// Copyright (c) 2018 Fuzhou Rockchip Electronics Co., Ltd
+
+/dts-v1/;
+#include "rk3399pro-rockpi-n10-android.dts"
+
+&gmac {
+	status = "okay";
+        //snps,reset-delays-us = <0 10000 50000>;
+        //tx_delay = <0x28>;
+        //rx_delay = <0x11>;
+        snps,reset-delays-us = <0 20000 100000>;
+        tx_delay = <0x17>;
+        rx_delay = <0x19>;
+};
+
+/* DON'T PUT ANYTHING BELOW HERE.  PUT IT ABOVE PINCTRL */
+/* DON'T PUT ANYTHING BELOW HERE.  PUT IT ABOVE PINCTRL */
+/* DON'T PUT ANYTHING BELOW HERE.  PUT IT ABOVE PINCTRL */
