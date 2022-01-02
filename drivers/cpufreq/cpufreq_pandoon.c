@@ -116,7 +116,8 @@ static int cpufreq_gov_pandoon_limits(struct cpufreq_policy *policy, unsigned in
 		printk("policy2---min:%u, max:%u",policy->min,policy->max);
 	}*/
 	my_func(policy);
-	
+	//Ehsan rockpi
+	return 0;
 	
 }
 
