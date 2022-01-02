@@ -124,7 +124,9 @@ static
 struct cpufreq_governor cpufreq_gov_pandoon = {
 	.name		= "pandoon",
 	.owner		= THIS_MODULE,
-	.limits		= cpufreq_gov_pandoon_limits,
+	///Ehsan: rockpi has .governor instead of .limits
+	//.limits		= cpufreq_gov_pandoon_limits,
+	.governor		= cpufreq_gov_pandoon_limits,
 };
 
 static int __init cpufreq_gov_pandoon_init(void)
