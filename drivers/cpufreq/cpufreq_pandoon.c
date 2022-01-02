@@ -78,7 +78,10 @@ int my_func(struct cpufreq_policy *policy){
 	
 }
 
-static void cpufreq_gov_pandoon_limits(struct cpufreq_policy *policy)
+//Ehsan
+//This function prototype is differnet in rockpi
+//static void cpufreq_gov_pandoon_limits(struct cpufreq_policy *policy)
+static int cpufreq_gov_pandoon_limits(struct cpufreq_policy *policy, unsigned int event)
 {
 	/*unsigned int index;
 	unsigned int i;
