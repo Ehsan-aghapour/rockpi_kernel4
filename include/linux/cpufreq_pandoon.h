@@ -16,6 +16,8 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/delay.h>
+//#include <linux/kthread.h>
+//#include "cpufreq_governor.h"
 
 extern bool pset1;
 extern bool pset2;

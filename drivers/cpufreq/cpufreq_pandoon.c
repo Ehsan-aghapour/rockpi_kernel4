@@ -12,8 +12,10 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
+//Ehsan
+//#include "cpufreq_pandoon.h"
+#include <linux/cpufreq_pandoon.h>
 
-#include "cpufreq_pandoon.h"
 //#include "cpufreq_governor.h"
 #include <linux/delay.h>
 bool pset1=0;
