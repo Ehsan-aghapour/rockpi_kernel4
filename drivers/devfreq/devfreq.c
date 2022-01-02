@@ -247,6 +247,74 @@ int update_devfreq(struct devfreq *devfreq)
 }
 EXPORT_SYMBOL(update_devfreq);
 
+//Ehsan
+int update_devfreq2(struct devfreq *devfreq , unsigned long freq)
+{
+	struct devfreq_freqs freqs;
+	unsigned long  cur_freq;
+	int err = 0;
+	u32 flags = 0;
+
+	if (!mutex_is_locked(&devfreq->lock)) {
+		WARN(true, "devfreq->lock must be locked by the caller.\n");
+		return -EINVAL;
+	}
+
+	if (!devfreq->governor)
+		return -EINVAL;
+
+	//Ehsan: freq is no longer get here but it is passed through input argument of this function (unsigned long freq)
+	/* Reevaluate the proper frequency */
+	////err = devfreq->governor->get_target_freq(devfreq, &freq);
+	////if (err)
+	////	return err;
+
+	/*
+	 * Adjust the frequency with user freq and QoS.
+	 *
+	 * List from the highest priority
+	 * max_freq
+	 * min_freq
+	 */
+
+	if (devfreq->min_freq && freq < devfreq->min_freq) {
+		freq = devfreq->min_freq;
+		flags &= ~DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use GLB */
+	}
+	if (devfreq->max_freq && freq > devfreq->max_freq) {
+		freq = devfreq->max_freq;
+		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
+	}
+
+	if (devfreq->profile->get_cur_freq)
+		devfreq->profile->get_cur_freq(devfreq->dev.parent, &cur_freq);
+	else
+		cur_freq = devfreq->previous_freq;
+
+	freqs.old = cur_freq;
+	freqs.new = freq;
+	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_PRECHANGE);
+
+	err = devfreq->profile->target(devfreq->dev.parent, &freq, flags);
+	if (err) {
+		freqs.new = cur_freq;
+		devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
+		return err;
+	}
+
+	freqs.new = freq;
+	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
+
+	if (devfreq->profile->freq_table)
+		if (devfreq_update_status(devfreq, freq))
+			dev_err(&devfreq->dev,
+				"Couldn't update frequency transition information.\n");
+
+	devfreq->previous_freq = freq;
+	return err;
+}
+EXPORT_SYMBOL(update_devfreq2);
+
 /**
  * devfreq_monitor() - Periodically poll devfreq objects.
  * @work:	the work struct used to run devfreq_monitor periodically.

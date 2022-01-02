@@ -40,6 +40,12 @@ config DEVFREQ_GOV_SIMPLE_ONDEMAND
 	  values that imply the usage rate. A device may provide tuned
 	  values to the governor with data field at devfreq_add_device().
 
+#Ehsan
+config DEVFREQ_GOV_PANDOON
+	tristate "Pandoon"
+	help
+	  pandoon for gathering dataset.
+
 config DEVFREQ_GOV_PERFORMANCE
 	tristate "Performance"
 	help

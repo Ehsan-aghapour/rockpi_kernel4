@@ -1097,6 +1097,7 @@ static unsigned int intel_pstate_get(unsigned int cpu_num)
 	return sample->freq;
 }
 
+//Ehsan: Maybe here limit max frequency of the policy or just change the policy for heat problem
 static int intel_pstate_set_policy(struct cpufreq_policy *policy)
 {
 	if (!policy->cpuinfo.max_freq)

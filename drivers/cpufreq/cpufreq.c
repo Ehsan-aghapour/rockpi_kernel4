@@ -2238,6 +2238,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 	policy->max = new_policy->max;
 	trace_cpu_frequency_limits(policy->max, policy->min, policy->cpu);
 
+	//Ehsan here is not mine code but consider this for tracking if max min has changed.(maybe)
 	pr_debug("new min and max freqs are %u - %u kHz\n",
 		 policy->min, policy->max);
 
@@ -2322,6 +2323,14 @@ int cpufreq_update_policy(unsigned int cpu)
 		return -ENODEV;
 
 	down_write(&policy->rwsem);
+
+	/* Ehsan : it is the placed at which max and mins are changing and effect on different freqs
+		if(new_policy.min!= policy->user_policy.min)
+			printk("min was updated. previous:%d,new min:%d",new_policy.min,policy->user_policy.min);
+
+		if(new_policy.max!= policy->user_policy.max)
+			printk("max was updated. previous:%d,new max:%d",new_policy.max,policy->user_policy.max);
+		*/
 
 	pr_debug("updating policy for CPU %u\n", cpu);
 	memcpy(&new_policy, policy, sizeof(*policy));

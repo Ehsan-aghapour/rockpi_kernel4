@@ -300,8 +300,11 @@ static int nforce2_verify(struct cpufreq_policy *policy)
 
 	fsb_pol_max = policy->max / (fid * 100);
 
-	if (policy->min < (fsb_pol_max * fid * 100))
+	if (policy->min < (fsb_pol_max * fid * 100)){
 		policy->max = (fsb_pol_max + 1) * fid * 100;
+		//Ehsan
+		//printk("force");
+	}
 
 	cpufreq_verify_within_cpu_limits(policy);
 	return 0;
@@ -356,6 +359,8 @@ static int nforce2_cpu_init(struct cpufreq_policy *policy)
 	if (min_fsb < NFORCE2_MIN_FSB)
 		min_fsb = NFORCE2_MIN_FSB;
 
+	//Ehsan
+	//printk("forcee");
 	/* cpuinfo and default policy values */
 	policy->min = policy->cpuinfo.min_freq = min_fsb * fid * 100;
 	policy->max = policy->cpuinfo.max_freq = max_fsb * fid * 100;

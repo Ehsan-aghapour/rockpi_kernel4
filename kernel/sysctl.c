@@ -711,8 +711,11 @@ static struct ctl_table kern_table[] = {
 		.mode		= 0644,
 		/* only handle a transition from default "0" to "1" */
 		.proc_handler	= proc_dointvec_minmax,
-		.extra1		= &one,
-		.extra2		= &one,
+		//Ehsan
+		//.extra1		= &one,
+		//.extra2		= &one,
+		.extra1		= &zero,
+		.extra2		= &zero,
 	},
 #endif
 #ifdef CONFIG_UEVENT_HELPER
