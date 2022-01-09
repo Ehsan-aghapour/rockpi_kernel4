@@ -111,191 +111,30 @@ static void emit_pid_name(const char *comm, struct task_struct *task)
     }
 }
 
-
-
-//struct counter_data counters[100];
-//int counters[100][2]={0};
-
-int dd2[1000]={0};
-//int ct2[1000]={0};
-
-
 static void collect_counters(u64 time, struct task_struct *task, bool sched_switch)
 {
-
-    ////static struct timespec tt;
-    //static char *ss=new char();
-    static int c=0;
-    //static int cc=0;
-    //static char ds[2000];
-    //static char* p=ds;
-    /*cc+=1;
-    if(cc>100){
-	cc=0;
-	printk("report:%s\n",ds);
-        ds[0]=0;
-    }*/
-    //char st[20];
-    //static int bb[300];
-
-    
-    static long long dd[1000]={0};
-    static int ct[1000]={0};
-    static u64 tt=0;
     int *buffer, len, cpu = get_physical_cpu();
     long long *buffer64;
     struct gator_interface *gi;
-    if((time-tt)>10000000){
-	int ii;
-	tt=time;
-	for (ii=0;ii<1000;ii++)
-		if(ct[ii]){
-			dd2[ii]=(int) (dd[ii]/ct[ii]);
-			//ct2[ii]=ct[ii];
-			printk("key:%d,count:%d,sum-value:%lld, mean: %d",ii,ct[ii],dd[ii],dd2[ii]);
-			ct[ii]=0;
-		}
-    }
-	/*
-    static u64 tt=0;
-    if((time-tt)>4000000){
-	int ii;
-	tt=time;
-	for (ii=0;ii<1000;ii++)
-		if(counters[ii][1]){
-			printk("key:%d,count:%d,lastvalue:%f",counters[ii],counters[1],double(counters[0]/countes[1]));
-			counters[ii][1]=0;
-		}
-    }*/
-    //static int ind[50]={0};
-    
-    
-    //printk("time:%llu",time);
-    ////getnstimeofday(&tt);
-    ////printk("collect in trace_sched:%lld.%.9ld", (long long)tt.tv_sec,tt.tv_nsec);
-    //int pp=0;
+
     if (marshal_event_header(time)) {
         list_for_each_entry(gi, &gator_events, list) {
-            //printk("trace-gi_name:%s\n",gi->name);
             if (gi->read) {
                 len = gi->read(&buffer, sched_switch);
-	        /*for (c=0;(c+1)<len;c+=2)
-			sprintf(ds,"%s %d:%d, ",ds,buffer[c],buffer[c+1]);*/
-	        for (c=0;(c+1)<len;c+=2){
-			dd[buffer[c]]+=buffer[c+1];
-			ct[buffer[c]]++;
-			//counters[buffer[c]][0]+=buffer[c+1];
-			//counters[buffer[c]][1]++;
-		}
-
-
-		//printk("len:%d\n",len);
-		/*for (c=0;(c+1)<len;c+=2){
-			int key=buffer[c];
-			dd[key][ind[key]]=buffer[c+1];
-			ind[key]+=1;
-			if (ind[key]>49){
-				for (pp=0;pp<1000;pp++){
-					int jj=0;
-					printk("key:%d\n",pp);
-					for(jj=0;jj<ind[pp];jj++){
-						printk("%d, ",dd[pp][jj]);
-					}
-					ind[pp]=0;
-					printk("\n");
-				}
-			}
-		}*/
-			//printk("len:%d, key:%d, value:%d\n",len,buffer[c],buffer[c+1]);
-			
-		//printk("len:%d, key:%d, value:%d\n",len,buffer[0],buffer[1]);
-		//sprintf(st,"%d",buffer[1]);
-	        //strcat(ss,st);
-		//printk("new\n");
                 if (len < 0)
                     pr_err("gator: read failed for %s\n", gi->name);
-		
-		//if(c>100){
-		//	int i=0;
-		///	for(i=0;i<c;i+=2){
-		///		printk("key:%d, value:%d\n",bb[i],bb[i+1]);
-		///	}
-		//	c=0;
-		//}	
-			
-		//else{
-		//	bb[c++]=buffer[0];
-		//	bb[c++]=buffer[1];
-		//}
-		
                 marshal_event(len, buffer);
             } else if (gi->read64) {
                 len = gi->read64(&buffer64, sched_switch);
-		//for (c=0;(c+1)<len;c+=2)
-		//	printk("len:%d, key:%lld, value:%lld\n",len,buffer64[c],buffer64[c+1]);
-		/*for (c=0;(c+1)<len;c+=2){
-			int key=buffer[c];
-			dd[key][ind[key]]=buffer[c+1];
-			ind[key]+=1;
-			if (ind[key]>49){
-				for (pp=0;pp<1000;pp++){
-					int jj=0;
-					printk("key:%d\n",pp);
-					for(jj=0;jj<ind[pp];jj++){
-						printk("%d, ",dd[pp][jj]);
-					}
-					ind[pp]=0;
-					printk("\n");
-				}
-			}
-		}*/
-		/*for (c=0;(c+1)<len;c+=2)
-			sprintf(ds,"%s%lld:%lld, ",ds,buffer64[c],buffer64[c+1]);*/
-		for (c=0;(c+1)<len;c+=2){
-			dd[buffer64[c]]+=buffer64[c+1];
-			ct[buffer64[c]]++;
-			//counters[buffer[c]][0]+=buffer[c+1];
-			//counters[buffer[c]][1]++;
-		}
-
                 if (len < 0)
                     pr_err("gator: read64 failed for %s\n", gi->name);
-		
-		marshal_event64(len, buffer64);
+                marshal_event64(len, buffer64);
             }
             if (gi->read_proc && task != NULL) {
                 len = gi->read_proc(&buffer64, task);
-		//for (c=0;(c+1)<len;c+=2)
-		//	printk("len:%d, key:%lld, value:%lld\n",len,buffer64[c],buffer64[c+1]);
-		/*for (c=0;(c+1)<len;c+=2){
-			int key=buffer[c];
-			dd[key][ind[key]]=buffer[c+1];
-			ind[key]+=1;
-			if (ind[key]>49){
-				for (pp=0;pp<1000;pp++){
-					int jj=0;
-					printk("key:%d\n",pp	);
-					for(jj=0;jj<ind[pp];jj++){
-						printk("%d, ",dd[pp][jj]);
-					}
-					ind[pp]=0;
-					printk("\n");
-				}
-			}
-		}*/
-		/*for (c=0;(c+1)<len;c+=2)
-			sprintf(ds,"%s%lld:%lld, ",ds,buffer64[c],buffer64[c+1]);*/
-	        for (c=0;(c+1)<len;c+=2){
-			dd[buffer64[c]]+=buffer64[c+1];
-			ct[buffer64[c]]++;
-			//counters[buffer[c]][0]+=buffer[c+1];
-			//counters[buffer[c]][1]++;
-		}
-
                 if (len < 0)
                     pr_err("gator: read_proc failed for %s\n", gi->name);
-
-		marshal_event64(len, buffer64);
+                marshal_event64(len, buffer64);
             }
         }
         if (cpu == 0)

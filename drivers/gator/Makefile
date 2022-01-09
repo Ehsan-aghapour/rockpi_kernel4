@@ -20,7 +20,7 @@ silent_chk_events.h = :
 CONFIG_GATOR_MALI_4XXMP := n
 CONFIG_GATOR_MALI_MIDGARD := y
 EXTRA_CFLAGS += -DMALI_SUPPORT=MALI_MIDGARD_OR_BIFROST
-CONFIG_GATOR_MALI_MIDGARD_PATH ?= drivers/gpu/arm/bifrost-hikey970
+CONFIG_GATOR_MALI_MIDGARD_PATH ?= drivers/gpu/arm/midgard
 gator-y +=  gator_events_mali_midgard.o \
      	gator_events_mali_midgard_hw.o
 include $(src)/mali_midgard.mk

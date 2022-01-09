@@ -209,6 +209,6 @@ source "drivers/rk_nand/Kconfig"
 source "drivers/headset_observe/Kconfig"
 
 #Ehsan
-#source "drivers/gator/Kconfig"
+source "drivers/gator/Kconfig"
 
 endmenu

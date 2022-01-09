@@ -1,0 +1,6 @@
+#!/bin/bash
+export CROSS_COMPILE=/media/ehsan/Learn/NUS/android-ndk-r15c/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/bin/aarch64-linux-android-
+
+export ARCH=arm64
+
+make -C /media/ehsan/Learn/NUS/ubuntu/Bhikey/linux M=`pwd` modules

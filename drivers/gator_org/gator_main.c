@@ -37,11 +37,6 @@ static unsigned long gator_protocol_version = PROTOCOL_VERSION;
 
 #include "gator.h"
 #include "generated_gator_src_md5.h"
-/////ehsan
-#include <linux/ioctl.h>
-#include <linux/proc_fs.h>
-#define capture_data _IOR('g','c',int *)
-
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 4, 0)
 #error Kernels prior to 3.4 not supported. DS-5 v5.21 and earlier supported 2.6.32 and later.
@@ -381,7 +376,7 @@ not_found:
 static void gator_timer_interrupt(void)
 {
     struct pt_regs *const regs = get_irq_regs();
-    //printk("timer interrupt\n");
+
     gator_backtrace_handler(regs);
 }
 
@@ -395,6 +390,7 @@ static void gator_backtrace_handler(struct pt_regs *const regs)
 
     /* Collect counters */
     if (!per_cpu(collecting, cpu))
+	printk("injaa\n");
         collect_counters(time, current, false);
 
     /* No buffer flushing occurs during sched switch for RT-Preempt full. The block counter frame will be flushed by collect_counters, but the sched buffer needs to be explicitly flushed */
@@ -815,7 +811,7 @@ static void gator_summary(void)
     /* Set monotonic_started to zero as gator_get_time is uptime minus monotonic_started */
     gator_monotonic_started = 0;
     gator_monotonic_started = gator_get_time();
-    printk("summmary:timestamp:%llu,%llu",timestamp,gator_monotonic_started);
+
     marshal_summary(timestamp, uptime, gator_monotonic_started, uname_buf);
     gator_sync_time = 0;
     gator_emit_perf_time(gator_monotonic_started);
@@ -887,12 +883,9 @@ static int gator_start(void)
 
     /* start all events */
     list_for_each_entry(gi, &gator_events, list) {
-        //printk("main_all-gi_name:%s\n",gi->name);
         if (gi->start && gi->start() != 0) {
-	    
             struct list_head *ptr = gi->list.prev;
 
-	    
             while (ptr != &gator_events) {
                 gi = list_entry(ptr, struct gator_interface, list);
 
@@ -1199,7 +1192,7 @@ static ssize_t userspace_buffer_read(struct file *file, char __user *buf, size_t
     char *buffer2;
     int cpu, buftype;
     int written = 0;
-    //printk("salam\n");
+
     /* ensure there is enough space for a whole frame */
     if (count < userspace_buffer_size || *offset)
         return -EINVAL;
@@ -1234,12 +1227,7 @@ static ssize_t userspace_buffer_read(struct file *file, char __user *buf, size_t
             length1 = gator_buffer_size[buftype] - read;
             length2 = commit;
         }
-	/*printk("salll\n");
-	printk("%c",buffer1[0]);
-	printk("%c",buffer1[1]);
-	printk("%c",buffer1[2]);
-	printk("%c",buffer1[3]);
-	printk("\n");*/
+
         if (length1 + length2 > count - written)
             break;
 
@@ -1302,38 +1290,6 @@ static const struct file_operations depth_fops = {
     .write = depth_write
 };
 
-
-////ehsan
-static long my_ioctl_gator(struct file *file, unsigned int cmd, unsigned long arg);
-static struct file_operations proc_fops_gator = {
-       // .open = open_proc,
-        .unlocked_ioctl=my_ioctl_gator,
-       // .release = release_proc
-};
-
-int ret=0;
-static long my_ioctl_gator(struct file *file, unsigned int cmd, unsigned long arg){
-	switch(cmd){
-		/*case next_state:
-			flag = 1 ;
-			wake_up_interruptible (&wq);
-			break;
-		
-		case next_freq:
-			flag=2;
-			copy_from_user(&f_index, (int*)arg, sizeof(int));
-			wake_up_interruptible (&wq);
-			break;*/
-		case capture_data:
-			ret=copy_to_user((int *) arg, dd2, 1000*sizeof(int));
-			break;
-
-	}
-	return ret;
-
-
-}
-
 static void gator_op_create_files(struct super_block *sb, struct dentry *root)
 {
     struct dentry *dir;
@@ -1364,9 +1320,6 @@ static void gator_op_create_files(struct super_block *sb, struct dentry *root)
     /* Linux Events */
     dir = gatorfs_mkdir(sb, root, "events");
     gator_pmu_create_files(sb, root, dir);
-
-   //////ehsan
-    proc_create("gator_data",0666,NULL,&proc_fops_gator);
 }
 
 /******************************************************************************

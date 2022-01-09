@@ -27,7 +27,7 @@
 #endif
 
 /* Uncomment the following line to enable kernel stack unwinding within gator, note it can also be defined from the Makefile */
-/* #define GATOR_KERNEL_STACK_UNWINDING */
+#define GATOR_KERNEL_STACK_UNWINDING
 
 #if GATOR_KERNEL_UNWINDING
 
@@ -60,7 +60,6 @@ static int report_trace(struct stackframe *frame, void *d)
         if (mod) {
             cookie = get_cookie(cpu, current, mod->name, false);
             addr = addr -
-            
 //Ehsan
 //#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 5, 0)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 4, 0)
@@ -102,9 +101,9 @@ static void kernel_backtrace(int cpu, struct pt_regs *const regs)
     frame.pc = regs->pc;
 #endif
 
-//Ehsan change to 4.4 as rockpi n10 kernel 4.4 walk_stackframe in arch/arm64/include/asm/stacktrace.h header has 4 input 
-//#if defined(__aarch64__) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 5, 0)
+//Ehsan
 #if defined(__aarch64__) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
+//#if defined(__aarch64__) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 5, 0)
     walk_stackframe(current, &frame, report_trace, &depth);
 #else
     walk_stackframe(&frame, report_trace, &depth);

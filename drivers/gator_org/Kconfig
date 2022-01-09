@@ -41,7 +41,6 @@ config GATOR_MALI_4XXMP
 
 config GATOR_MALI_MIDGARD
     bool "Mali-T60x, Mali-T62x, Mali-T72x or Mali-T76x"
-    default y
     select GATOR_WITH_MALI_SUPPORT
 
 endchoice
@@ -49,7 +48,7 @@ endchoice
 config GATOR_MALI_4XXMP_PATH
     string "Path to Mali driver"
     depends on GATOR_MALI_4XXMP
-    default "drivers/gpu/arm/midgard"
+    default "drivers/gpu/arm/mali400mp"
     help
       The gator code adds this to its include path so it can get the Mali
       trace headers with: #include "linux/mali_linux_trace.h"
