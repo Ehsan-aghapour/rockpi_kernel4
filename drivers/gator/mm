@@ -1,6 +1,15 @@
 #!/bin/bash
-export CROSS_COMPILE=/media/ehsan/Learn/NUS/android-ndk-r15c/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/bin/aarch64-linux-android-
+Rockpi_kernel_path=/home/ehsan/UvA/DRLPM/RockPi/Kernel_stable_branch_on_AOSP
+Rockpi_kernel_path_server=/home/ehsan/rockpi_n10/kernel
+Hikey_kernel_path=/media/ehsan/Learn/NUS/ubuntu/Bhikey/linux
 
+Hikey_cross_compiler_path=/media/ehsan/Learn/NUS/android-ndk-r15c/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/bin/aarch64-linux-android-
+#Rockpi_cross_compiler_path=/home/ehsan/UvA/ARMCL/android-ndk-r21e-linux-x86_64/android-ndk-r21e/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/bin/aarch64-linux-android-
+Rockpi_cross_compiler_path=/home/ehsan/UvA/DRLPM/Master_Backup/NUS/android-ndk-r15c/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/bin/aarch64-linux-android-
+Rockpi_cross_compiler_path_server=/home/ehsan/Gator_rock/android-ndk-r15c/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/bin/aarch64-linux-android-
+
+export CROSS_COMPILE=${Rockpi_cross_compiler_path}
 export ARCH=arm64
 
-make -C /media/ehsan/Learn/NUS/ubuntu/gatorstream/Bhikey/linux/ M=`pwd` modules
+make -C ${Rockpi_kernel_path} M=`pwd` modules
+

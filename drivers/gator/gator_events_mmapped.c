@@ -204,6 +204,7 @@ int gator_events_mmapped_init(void)
     for (i = 0; i < MMAPPED_COUNTERS_NUM; i++) {
         mmapped_counters[i].enabled = 0;
         mmapped_counters[i].key = gator_events_get_key();
+	//printk("mmapped,key:%lu",mmapped_counters[i].key);
     }
 
     return gator_events_install(&gator_events_mmapped_interface);

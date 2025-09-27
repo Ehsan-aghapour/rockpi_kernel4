@@ -52,6 +52,7 @@ static int sched_trace_create_files(struct super_block *sb, struct dentry *root)
 
     for (i = 0; i < ARRAY_SIZE(sched_wait_event_names); ++i) {
         dir = gatorfs_mkdir(sb, root, sched_wait_event_names[i]);
+	//printk("sss:%s",dir->d_iname);
         if (!dir)
             return -1;
         gatorfs_create_ulong(sb, dir, "enabled", &sched_wait_enabled[i]);
@@ -62,6 +63,7 @@ static int sched_trace_create_files(struct super_block *sb, struct dentry *root)
         for (j = 0; j < gator_cluster_count; j++) {
             snprintf(buf, sizeof(buf), "%s_%s", gator_clusters[j]->pmnc_name, sched_activity_event_names[i]);
             dir = gatorfs_mkdir(sb, root, buf);
+	    //printk("sss:%s,ssss:%s",dir->d_iname,buf);
             if (!dir)
                 return -1;
             gatorfs_create_ulong(sb, dir, "enabled", &sched_activity_enabled[i][j]);
@@ -116,8 +118,9 @@ static void emit_pid_name(const char *comm, struct task_struct *task)
 //struct counter_data counters[100];
 //int counters[100][2]={0};
 
-int dd2[1000]={0};
+//int dd2[1000]={0};
 //int ct2[1000]={0};
+
 
 
 static void collect_counters(u64 time, struct task_struct *task, bool sched_switch)
@@ -125,7 +128,7 @@ static void collect_counters(u64 time, struct task_struct *task, bool sched_swit
 
     ////static struct timespec tt;
     //static char *ss=new char();
-    static int c=0;
+    //static int c=0;
     //static int cc=0;
     //static char ds[2000];
     //static char* p=ds;
@@ -139,23 +142,18 @@ static void collect_counters(u64 time, struct task_struct *task, bool sched_swit
     //static int bb[300];
 
     
-    static long long dd[1000]={0};
-    static int ct[1000]={0};
-    static u64 tt=0;
-    int *buffer, len, cpu = get_physical_cpu();
-    long long *buffer64;
-    struct gator_interface *gi;
+    /*static u64 tt=0;
     if((time-tt)>10000000){
 	int ii;
 	tt=time;
 	for (ii=0;ii<1000;ii++)
 		if(ct[ii]){
-			dd2[ii]=(int) (dd[ii]/ct[ii]);
+			//dd2[ii]=(int) (dd[ii]/ct[ii]);
 			//ct2[ii]=ct[ii];
-			printk("key:%d,count:%d,sum-value:%lld, mean: %d",ii,ct[ii],dd[ii],dd2[ii]);
-			ct[ii]=0;
+			printk("key:%d,count:%d,sum-value:%lld\n",ii,ct[ii],dd[ii]);
+			//ct[ii]=0;
 		}
-    }
+    }*/
 	/*
     static u64 tt=0;
     if((time-tt)>4000000){
@@ -168,8 +166,9 @@ static void collect_counters(u64 time, struct task_struct *task, bool sched_swit
 		}
     }*/
     //static int ind[50]={0};
-    
-    
+    int *buffer, len, cpu = get_physical_cpu();
+    long long *buffer64;
+    struct gator_interface *gi;
     //printk("time:%llu",time);
     ////getnstimeofday(&tt);
     ////printk("collect in trace_sched:%lld.%.9ld", (long long)tt.tv_sec,tt.tv_nsec);
@@ -179,16 +178,18 @@ static void collect_counters(u64 time, struct task_struct *task, bool sched_swit
             //printk("trace-gi_name:%s\n",gi->name);
             if (gi->read) {
                 len = gi->read(&buffer, sched_switch);
-	        /*for (c=0;(c+1)<len;c+=2)
-			sprintf(ds,"%s %d:%d, ",ds,buffer[c],buffer[c+1]);*/
-	        for (c=0;(c+1)<len;c+=2){
-			dd[buffer[c]]+=buffer[c+1];
-			ct[buffer[c]]++;
+		
+		//the last one 
+			        
+	       // for (c=0;(c+1)<len;c+=2){
+			//dd[buffer[c]]+=buffer[c+1];
+			//ct[buffer[c]]++;
+			
 			//counters[buffer[c]][0]+=buffer[c+1];
 			//counters[buffer[c]][1]++;
-		}
-
-
+		//}
+		
+		
 		//printk("len:%d\n",len);
 		/*for (c=0;(c+1)<len;c+=2){
 			int key=buffer[c];
@@ -227,8 +228,8 @@ static void collect_counters(u64 time, struct task_struct *task, bool sched_swit
 		//	bb[c++]=buffer[0];
 		//	bb[c++]=buffer[1];
 		//}
-		
-                marshal_event(len, buffer);
+		//if(cpu!=0)
+                	marshal_event(len, buffer);
             } else if (gi->read64) {
                 len = gi->read64(&buffer64, sched_switch);
 		//for (c=0;(c+1)<len;c+=2)
@@ -251,17 +252,22 @@ static void collect_counters(u64 time, struct task_struct *task, bool sched_swit
 		}*/
 		/*for (c=0;(c+1)<len;c+=2)
 			sprintf(ds,"%s%lld:%lld, ",ds,buffer64[c],buffer64[c+1]);*/
-		for (c=0;(c+1)<len;c+=2){
-			dd[buffer64[c]]+=buffer64[c+1];
-			ct[buffer64[c]]++;
+
+		//the last one
+		
+		//for (c=0;(c+1)<len;c+=2){
+			//dd[buffer64[c]]+=buffer64[c+1];
+			//ct[buffer64[c]]++;
+			
+
 			//counters[buffer[c]][0]+=buffer[c+1];
 			//counters[buffer[c]][1]++;
-		}
-
+		//}
+		
                 if (len < 0)
                     pr_err("gator: read64 failed for %s\n", gi->name);
-		
-		marshal_event64(len, buffer64);
+		//if(cpu!=0)               
+			 marshal_event64(len, buffer64);
             }
             if (gi->read_proc && task != NULL) {
                 len = gi->read_proc(&buffer64, task);
@@ -285,17 +291,22 @@ static void collect_counters(u64 time, struct task_struct *task, bool sched_swit
 		}*/
 		/*for (c=0;(c+1)<len;c+=2)
 			sprintf(ds,"%s%lld:%lld, ",ds,buffer64[c],buffer64[c+1]);*/
-	        for (c=0;(c+1)<len;c+=2){
-			dd[buffer64[c]]+=buffer64[c+1];
-			ct[buffer64[c]]++;
+
+		//the last one
+		
+	    //    for (c=0;(c+1)<len;c+=2){
+			//dd[buffer64[c]]+=buffer64[c+1];
+			//ct[buffer64[c]]++;
+			
+
 			//counters[buffer[c]][0]+=buffer[c+1];
 			//counters[buffer[c]][1]++;
-		}
-
+		//}
+		
                 if (len < 0)
                     pr_err("gator: read_proc failed for %s\n", gi->name);
-
-		marshal_event64(len, buffer64);
+		//if(cpu!=0)              
+			  marshal_event64(len, buffer64);
             }
         }
         if (cpu == 0)
@@ -330,7 +341,10 @@ static void collect_counters(u64 time, struct task_struct *task, bool sched_swit
 /* special case used during a suspend of the system */
 static void trace_sched_insert_idle(void)
 {
-    marshal_sched_trace_switch(0, 0);
+    //ehsan
+    marshal_sched_trace_switch(0, 0 );
+	//printk("idel,time:%llu",gator_get_time());
+    
 }
 
 static void gator_trace_emit_link(struct task_struct *p)
@@ -385,8 +399,9 @@ GATOR_DEFINE_PROBE(sched_switch, TP_PROTO(bool preempt, struct task_struct *prev
     per_cpu(collecting, cpu) = 1;
     collect_counters(gator_get_time(), prev, true);
     per_cpu(collecting, cpu) = 0;
-
-    marshal_sched_trace_switch(next->pid, state);
+    //ehsan
+    marshal_sched_trace_switch(next->pid, state );
+    //printk("sched_swtich,time:%llu,prev_pid:%d,next_pid:%d,state:%d",gator_get_time(),prev->pid,next->pid,state);
 
     per_cpu(in_scheduler_context, cpu) = false;
 }
@@ -491,12 +506,14 @@ static void gator_trace_sched_init(void)
     for (i = 0; i < ARRAY_SIZE(sched_wait_enabled); i++) {
         sched_wait_enabled[i] = 0;
         sched_wait_keys[i] = gator_events_get_key();
+	//printk("1-trace_sched,key:%lu",sched_wait_keys[i]);
     }
 
     for (i = 0; i < ARRAY_SIZE(sched_activity_enabled); i++) {
         for (j = 0; j < gator_cluster_count; j++) {
             sched_activity_enabled[i][j] = 0;
             sched_activity_keys[i][j] = gator_events_get_key();
+	    //printk("2-trace_sched,key:%lu",sched_activity_keys[i][j]);
         }
     }
 }

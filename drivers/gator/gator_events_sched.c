@@ -49,6 +49,8 @@ static int gator_events_sched_create_files(struct super_block *sb, struct dentry
             return -1;
         gatorfs_create_ulong(sb, dir, "enabled", &sched_switch_enabled[i]);
         gatorfs_create_ro_ulong(sb, dir, "key", &sched_switch_key[i]);
+	//printk("gator_trace_sched, buf:%s, enable:%lu,key:%lu",buf,sched_switch_key[i],sched_switch_enabled[i]);
+	//715-717
     }
 
     return 0;
@@ -129,6 +131,7 @@ int gator_events_sched_init(void)
     for (i = 0; i < gator_cluster_count; i++) {
         sched_switch_enabled[i] = 0;
         sched_switch_key[i] = gator_events_get_key();
+	//printk("events_sched,key:%lu",sched_switch_key[i]);
     }
 
     return gator_events_install(&gator_events_sched_interface);

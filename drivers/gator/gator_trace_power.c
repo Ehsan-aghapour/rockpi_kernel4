@@ -164,6 +164,7 @@ static void gator_trace_power_init(void)
     for (i = 0; i < gator_cluster_count; i++) {
         power_cpu_enabled[i] = 0;
         power_cpu_key[i] = gator_events_get_key();
+	printk("power,key:%lu",power_cpu_key[i]);
     }
 }
 #else

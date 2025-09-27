@@ -37,11 +37,17 @@ static unsigned long gator_protocol_version = PROTOCOL_VERSION;
 
 #include "gator.h"
 #include "generated_gator_src_md5.h"
-/////ehsan
+
+/******************** ehsan **********************/
 #include <linux/ioctl.h>
 #include <linux/proc_fs.h>
-#define capture_data _IOR('g','c',int *)
-
+union ptr32{
+ int* a;
+ uint64_t padding;
+};
+#define capture_data _IOR('g','c',union ptr32)
+//#define capture_max _IO('g','m')
+/*************************************************/
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 4, 0)
 #error Kernels prior to 3.4 not supported. DS-5 v5.21 and earlier supported 2.6.32 and later.
@@ -524,8 +530,9 @@ static void gator_timer_online(void *migrate)
     u64 time;
 
     /* Send what is currently running on this core */
-    marshal_sched_trace_switch(current->pid, 0);
-
+    //ehsan last argument meaning not a(artificial)
+    marshal_sched_trace_switch(current->pid, 0 );
+    //printk("main_timerhandler,time:%llu,current_pid:%d,core:%d",gator_get_time(),current->pid,cpu);
     gator_trace_power_online();
 
     /* online any events and output counters */
@@ -815,7 +822,7 @@ static void gator_summary(void)
     /* Set monotonic_started to zero as gator_get_time is uptime minus monotonic_started */
     gator_monotonic_started = 0;
     gator_monotonic_started = gator_get_time();
-    printk("summmary:timestamp:%llu,%llu",timestamp,gator_monotonic_started);
+    //printk("summmary:timestamp:%llu,%llu",timestamp,gator_monotonic_started);
     marshal_summary(timestamp, uptime, gator_monotonic_started, uname_buf);
     gator_sync_time = 0;
     gator_emit_perf_time(gator_monotonic_started);
@@ -840,13 +847,132 @@ int gator_events_get_key(void)
      */
     static int key = 3;
     const int ret = key;
-
+    /******************** Ehsan *********************/
+    //if(key==107)
+	printk("hhhhhhhhhhhhhhhhhhhhh");
+    /************************************************/
     key += 2;
     return ret;
 }
 
 static int gator_init(void)
 {
+    /******************** Ehsan *********************/
+sema_init(&sem,1);
+sema_init(&usem,1);
+//sem_init(&mmm, 0, 1);
+
+idx[5]=0;
+idx[7]=8;
+idx[9]=16;
+idx[11]=24;
+idx[13]=32;
+idx[15]=40;
+
+idx[3]=48;
+
+
+idx[19]=0;
+idx[21]=8;
+idx[23]=16;
+idx[25]=24;
+idx[27]=32;
+idx[29]=40;
+
+idx[17]=48;
+
+
+//frequencies:
+idx[99]=56;
+idx[101]=56;
+
+
+//64-67 for A53 Utilizations
+//68-71 for A73 Utilizations
+
+
+idx[715]=72;
+idx[717]=72;
+
+idx[115]=80;
+idx[117]=81;
+idx[689]=82;
+idx[687]=83;
+idx[105]=84;
+idx[103]=85;
+idx[691]=86;
+idx[693]=87;
+idx[695]=88;
+idx[153]=89;
+idx[151]=90;
+idx[145]=91;
+idx[147]=92;
+idx[169]=93;
+idx[127]=94;
+idx[129]=95;
+idx[131]=96;
+idx[285]=97;
+idx[287]=98;
+idx[289]=99;
+idx[283]=100;
+idx[269]=101;
+idx[281]=102;
+idx[279]=103;
+idx[273]=104;
+idx[303]=105;
+idx[335]=106;
+idx[581]=107;
+idx[611]=108;
+idx[591]=109;
+idx[593]=110;
+idx[595]=111;
+idx[597]=112;
+idx[599]=113;
+idx[585]=114;
+idx[587]=115;
+idx[589]=116;
+idx[583]=117;
+idx[613]=118;
+idx[575]=119;
+idx[601]=120;
+idx[615]=121;
+idx[617]=122;
+idx[619]=123;
+idx[433]=124;
+idx[441]=125;
+idx[397]=126;
+idx[403]=127;
+idx[417]=128;
+idx[413]=129;
+idx[415]=130;
+idx[411]=131;
+idx[401]=132;
+idx[429]=133;
+idx[493]=134;
+idx[445]=135;
+idx[459]=136;
+idx[487]=137;
+idx[477]=138;
+idx[481]=139;
+idx[479]=140;
+idx[483]=141;
+idx[437]=142;
+idx[409]=143;
+idx[407]=144;
+idx[503]=145;
+idx[507]=146;
+idx[501]=147;
+idx[505]=148;
+idx[511]=149;
+idx[513]=150;
+idx[469]=151;
+idx[463]=152;
+idx[467]=153;
+idx[425]=154;
+idx[427]=155;
+idx[491]=156;
+idx[489]=157;
+/************************************************/
     calc_first_cluster_size();
 
     return 0;
@@ -922,6 +1048,7 @@ static int gator_start(void)
         goto notifier_failure;
 
     return 0;
+
 
 notifier_failure:
     gator_timer_stop();
@@ -1199,7 +1326,7 @@ static ssize_t userspace_buffer_read(struct file *file, char __user *buf, size_t
     char *buffer2;
     int cpu, buftype;
     int written = 0;
-    //printk("salam\n");
+    printk("salam\n");
     /* ensure there is enough space for a whole frame */
     if (count < userspace_buffer_size || *offset)
         return -EINVAL;
@@ -1303,16 +1430,52 @@ static const struct file_operations depth_fops = {
 };
 
 
-////ehsan
+/******************** Ehsan *********************/
 static long my_ioctl_gator(struct file *file, unsigned int cmd, unsigned long arg);
 static struct file_operations proc_fops_gator = {
        // .open = open_proc,
         .unlocked_ioctl=my_ioctl_gator,
        // .release = release_proc
+#ifdef CONFIG_COMPAT
+	.compat_ioctl = my_ioctl_gator,
+#endif
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,35))
+	.ioctl = my_ioctl_gator,
+#else
+	.unlocked_ioctl = my_ioctl_gator,
+#endif
 };
 
-int ret=0;
+
+int dd2[158]={0};
+//long long maxdd[158];
+//long long maxct[158];
+
 static long my_ioctl_gator(struct file *file, unsigned int cmd, unsigned long arg){
+
+	int ii;
+	static u64 ptime=0;
+	u64 time,utime,mtime;
+	int totaltime;
+	void __user *u_arg;
+	long long dc[158];
+	long long int temp;
+	long long prims;
+	//printk("gator_ioctl called");
+	
+	//printk("ioctl is called\n");
+	
+#ifdef CONFIG_COMPAT
+	if (is_compat_task())
+		u_arg = compat_ptr(arg);
+	else
+		u_arg = (void __user *)arg;
+#else
+	u_arg = (void __user *)arg;
+#endif
+
+
+
 	switch(cmd){
 		/*case next_state:
 			flag = 1 ;
@@ -1325,11 +1488,338 @@ static long my_ioctl_gator(struct file *file, unsigned int cmd, unsigned long ar
 			wake_up_interruptible (&wq);
 			break;*/
 		case capture_data:
-			ret=copy_to_user((int *) arg, dd2, 1000*sizeof(int));
+			//printk("Balee");
+			//marshal_sched_trace_switch(0,0,1);
+			
+			
+
+			up(&sem);
+			up(&usem);
+			time = gator_get_time();			
+			totaltime=time-ptime;
+			ptime=time;
+			
+			for(ii=0;ii<8;ii++){
+				//printk("index:%d,idle:%lld,total:%lld",ii+64,idletime[ii],totaltime);
+				update_idle(-1,-1,time,ii,0);
+				temp=100*(totaltime-idletime[ii])/totaltime;				
+				dd2[64+ii]=(int)temp;
+				//printk("dd2:%d",dd2[64+ii]);
+				idletime[ii]=0;
+			}
+			//wtg=0;
+			////down(&usem);
+
+			////up(&sem);
+
+			if(ct[56])
+				dd2[56]=dd[56]/(ct[56]*1000000);
+			if(ct[60])
+				dd2[60]=dd[60]/(ct[60]*1000000);
+			if(ct[82])
+				dd2[82]=(dd[82]>>25)/ct[82];
+			if(ct[83])
+				dd2[83]=(dd[83]>>25)/ct[83];
+			if(ct[86])
+				dd2[86]=(dd[86]>>22)/ct[86];
+			if(ct[87]){
+				dd2[87]=(dd[87]>>25)/ct[87];
+				if(dd2[87]<0)
+					dd2[87]=0;
+			}
+			if(ct[88])
+				dd2[88]=(dd[88]>>22)/ct[88];
+
+			for (ii=0;ii<158;ii++){
+				dc[ii]=dd[ii];
+				dd[ii]=0;
+				ct[ii]=0;
+			}
+			down(&usem);
+			down(&sem);
+			utime=totaltime/1000;
+			mtime=utime/1000;
+
+
+			dd2[32]=(dc[32]<<9)/dc[0];
+			dd2[33]=(dc[33]<<9)/dc[1];
+			dd2[34]=(dc[34]<<9)/dc[2];
+			dd2[35]=(dc[35]<<9)/dc[3];
+
+			dd2[0]=(dc[0]<<8)/dc[48];
+			dd2[1]=(dc[1]<<8)/dc[49];
+			dd2[2]=(dc[2]<<8)/dc[50];
+			dd2[3]=(dc[3]<<8)/dc[51];
+
+			dd2[36]=(dc[36]<<9)/dc[4];
+			dd2[37]=(dc[37]<<9)/dc[5];
+			dd2[38]=(dc[38]<<9)/dc[6];
+			dd2[39]=(dc[39]<<9)/dc[7];
+
+			dd2[4]=(dc[4]<<8)/dc[52];
+			dd2[5]=(dc[5]<<8)/dc[53];
+			dd2[6]=(dc[6]<<8)/dc[54];
+			dd2[7]=(dc[7]<<8)/dc[55];
+
+			dd2[40]=(dc[40]<<8)/dc[8];
+			dd2[41]=(dc[41]<<8)/dc[9];
+			dd2[42]=(dc[42]<<8)/dc[10];
+			dd2[43]=(dc[43]<<8)/dc[11];
+
+			dd2[8]=(dc[8]<<8)/dc[16];
+			dd2[9]=(dc[9]<<8)/dc[17];
+			dd2[10]=(dc[10]<<8)/dc[18];
+			dd2[11]=(dc[11]<<8)/dc[19];
+
+			dd2[44]=(dc[44]<<8)/dc[12];
+			dd2[45]=(dc[45]<<8)/dc[13];
+			dd2[46]=(dc[46]<<8)/dc[14];
+			dd2[47]=(dc[47]<<8)/dc[15];
+
+			dd2[12]=(dc[12]<<8)/dc[20];
+			dd2[13]=(dc[13]<<8)/dc[21];
+			dd2[14]=(dc[14]<<8)/dc[22];
+			dd2[15]=(dc[15]<<8)/dc[23];
+
+			dd2[24]=(dc[24]<<9)/dc[16];
+			dd2[25]=(dc[25]<<9)/dc[17];
+			dd2[26]=(dc[26]<<9)/dc[18];
+			dd2[27]=(dc[27]<<9)/dc[19];
+
+			dd2[16]=(dc[16]<<8)/dc[48];
+			dd2[17]=(dc[17]<<8)/dc[49];
+			dd2[18]=(dc[18]<<8)/dc[50];
+			dd2[19]=(dc[19]<<8)/dc[51];
+
+			dd2[28]=(dc[28]<<9)/dc[20];
+			dd2[29]=(dc[29]<<9)/dc[21];
+			dd2[30]=(dc[30]<<9)/dc[22];
+			dd2[31]=(dc[31]<<9)/dc[23];
+
+			dd2[20]=(dc[20]<<8)/dc[52];
+			dd2[21]=(dc[21]<<8)/dc[53];
+			dd2[22]=(dc[22]<<8)/dc[54];
+			dd2[23]=(dc[23]<<8)/dc[55];
+
+			dd2[48]=(dc[48]>>12)/mtime;
+			dd2[49]=(dc[49]>>12)/mtime;
+			dd2[50]=(dc[50]>>12)/mtime;
+			dd2[51]=(dc[51]>>12)/mtime;
+
+			dd2[52]=(dc[52]>>12)/mtime;
+			dd2[53]=(dc[53]>>12)/mtime;
+			dd2[54]=(dc[54]>>12)/mtime;
+			dd2[55]=(dc[55]>>12)/mtime;
+
+			/*
+			dd2[48]=dc[48]/(dd2[56]*1000000);
+			dd2[49]=dc[49]/(dd2[56]*1000000);
+			dd2[50]=dc[50]/(dd2[56]*1000000);
+			dd2[51]=dc[51]/(dd2[56]*1000000);
+
+			dd2[52]=(dc[52]/(dd2[60]*1000000);
+			dd2[53]=(dc[53]/(dd2[60]*1000000);
+			dd2[54]=(dc[54]/(dd2[60]*1000000);
+			dd2[55]=(dc[55]/(dd2[60]*1000000);
+			*/
+			
+			/*
+			if(ct[56]){
+				dd2[56]=(dc[56]<<8)/1000000;
+				//dd2[57]=(dc[56]<<8)/1000000;
+				//dd2[58]=(dc[56]<<8)/1000000;
+				//dd2[59]=(dc[56]<<8)/1000000;
+			}
+
+			if(ct[60]){
+				dd2[60]=(dc[60]<<8)/1000000;
+				//dd2[61]=(dc[60]<<8)/1000000;
+				//dd2[62]=(dc[60]<<8)/1000000;
+				//dd2[63]=(dc[60]<<8)/1000000;
+			}*/
+
+			//dd2[64..67]--> A53 utilization
+			//dd2[68..71]--> A73 utilization
+
+			dd2[72]=((dc[72])<<5)/mtime;
+			dd2[73]=((dc[73])<<5)/mtime;
+			dd2[74]=((dc[74])<<5)/mtime;
+			dd2[75]=((dc[75])<<5)/mtime;
+			
+			dd2[76]=((dc[76])<<5)/mtime;
+			dd2[77]=((dc[77])<<5)/mtime;
+			dd2[78]=((dc[78])<<5)/mtime;
+			dd2[79]=((dc[79])<<5)/mtime;
+
+			dd2[80]=(dc[80]<<8)/(dc[80]+dc[81]);
+			
+			dd2[81]=((dc[81]<<2))/utime;
+
+			//mem=dc[82]+dc[83]+dc[86]+dc[87]+dc[88];
+			/*
+			if(ct[82])
+				dd2[82]=(dc[82]<<8)/(ct[82]*mem);
+
+			if(ct[83])
+				dd2[83]=(dc[83]<<8)/(ct[83]*mem);
+
+			if(ct[86])
+				dd2[86]=(dc[86]<<8)/(ct[86]*mem);
+
+			if(ct[87])
+				dd2[87]=(dc[87]<<8)/(ct[87]*mem);
+
+			if(ct[88])
+				dd2[88]=(dc[88]<<8)/(ct[88]*mem);
+			*/
+
+			dd2[89]=(dc[89]<<8)/dc[91];
+			dd2[90]=(dc[90]<<1)/mtime;
+			dd2[91]=dc[91]/mtime;
+			
+			dd2[92]=(dc[92]<<8)/dc[91];
+			dd2[93]=(dc[93]<<8)/dc[91];	
+
+			prims=dc[97]+dc[98]+dc[99]+dc[100];
+	
+			dd2[97]=(dc[97]<<8)/prims;
+			// <<10 because it is small respectively:
+			dd2[98]=(dc[98]<<10)/prims;		
+			dd2[99]=(dc[99]<<8)/prims;		
+			dd2[100]=(dc[100]<<8)/prims;	
+
+			dd2[101]=(dc[101]<<8)/dc[91];	
+
+			dd2[102]=(dc[102]<<8)/dc[100];	
+
+			dd2[103]=(dc[103]<<8)/dc[100];	
+
+			//dd2[104]=(dc[104]<<6)/utime;	
+			dd2[104]=((dc[104]<<10)/dc[101]);	
+
+			dd2[105]=(dc[105]>>2)/mtime;	
+
+			dd2[106]=(dc[106]>>2)/mtime;	
+
+			dd2[107]=(dc[107]<<7)/dc[135];	
+
+			dd2[108]=(dc[108]<<8)/dc[135];
+
+			dd2[109]=(dc[109]<<8)/dc[107];
+
+			dd2[110]=(dc[110]<<8)/dc[107];
+
+			dd2[111]=(dc[111]<<8)/dc[107];
+
+			dd2[112]=(dc[112]<<8)/dc[107];
+
+			dd2[113]=(dc[113]<<8)/dc[107];
+
+			dd2[114]=(dc[114]<<8)/dc[119];
+
+			dd2[115]=(dc[115]<<8)/dc[119];
+
+			dd2[116]=(dc[116]<<8)/dc[119];
+			
+			dd2[117]=(dc[117]<<10)/dc[91];
+
+			//dd2[118]=(dc[118]<<10)/dc[91];
+			dd2[118]=(dc[118]<<8)/(dc[118]+dc[117]);
+
+			dd2[119]=(dc[119]<<8)/dc[135];
+
+			dd2[120]=(dc[120]<<8)/dc[135];
+			
+			dd2[121]=(dc[121]<<8)/dc[120];
+
+			dd2[122]=(dc[122]<<8)/dc[120];
+
+			dd2[123]=(dc[123]<<8)/dc[120];
+
+			dd2[124]=(dc[124]<<8)/dc[91];
+
+			dd2[125]=(dc[125]<<8)/dc[91];
+
+			dd2[126]=(dc[126]<<8)/dc[91];
+
+			dd2[127]=(dc[127]<<8)/dc[126];
+
+			dd2[128]=(dc[128]<<8)/dc[131];
+
+			dd2[129]=(dc[129]<<8)/dc[131];
+
+			dd2[130]=(dc[130]<<8)/dc[131];
+
+			dd2[131]=(16*dc[131])/utime;
+
+			dd2[132]=(256*dc[132])/utime;
+
+			dd2[133]=(128*dc[133])/utime;
+
+			dd2[134]=(dc[134]<<12)/dc[135];
+
+			dd2[135]=(dc[135]<<8)/dc[91];
+
+			dd2[136]=(dc[136]<<8)/dc[135];
+
+			dd2[137]=(dc[137]<<8)/dc[135];
+
+			dd2[138]=(dc[138]<<8)/dc[147];
+
+			dd2[139]=(dc[139]<<8)/dc[149];
+
+			dd2[140]=(dc[140]<<8)/(dc[140]+dc[138]);
+
+			dd2[141]=(dc[141]<<8)/(dc[141]+dc[139]);
+
+			//dd2[142]=(dc[142]<<1)/mtime;
+			dd2[142]=(dc[142]<<12)/(dc[142]+dc[144]);
+
+			dd2[143]=(dc[143]<<9)/dc[144];
+
+			//dd2[144]=(128*dc[144])/utime;
+			dd2[144]=(256*dc[144])/dc[131];
+
+			dd2[145]=(dc[145]<<8)/dc[147];
+
+			dd2[146]=(dc[146]<<8)/dc[148];
+
+			dd2[147]=(128*dc[147])/utime;
+
+			dd2[148]=(4*dc[148]<<8)/dc[151];
+
+			dd2[149]=(256*dc[149])/(dc[147]+dc[149]);
+
+			dd2[150]=(128*dc[150])/utime;
+
+			dd2[151]=(dc[151]<<8)/dc[91];
+
+			dd2[152]=(dc[152]<<8)/dc[136];
+
+			dd2[153]=(dc[153]<<8)/dc[136];
+
+			dd2[154]=(4*dc[154])/mtime;
+
+			dd2[155]=(dc[155]<<8)/dc[154];
+
+			dd2[156]=(dc[156]<<8)/dc[157];
+
+			dd2[157]=(dc[157]<<8)/dc[91];
+
+
+
+			if(copy_to_user((int *) u_arg, dd2, 158*sizeof(int))){
+				printk("gator copy error");
+				return -1;
+			}
 			break;
+			/*case capture_max:
+			for(ii=0;ii<158;ii++){
+				printk("for key:%d, max count is: %lld, max sum is %lld",ii,maxdd[ii],maxct[ii]);
+			}*/
 
 	}
-	return ret;
+	return 0;
 
 
 }

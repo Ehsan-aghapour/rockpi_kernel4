@@ -84,6 +84,8 @@ static int __create_files(struct super_block *sb, struct dentry *root, struct ga
     gatorfs_create_ro_ulong(sb, dir, "key", &attr->key);
     gatorfs_create_ulong(sb, dir, "event", &attr->event);
 
+    //printk("gator_events_perf_pmu, name:%s, type:%lu,enable:%lu,key:%lu,event:%lu",attr->name,attr->type,attr->enabled,attr->key,attr->event);
+
     return 0;
 }
 

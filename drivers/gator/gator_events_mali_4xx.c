@@ -615,6 +615,7 @@ int gator_events_mali_init(void)
         counter_enabled[cnt] = 0;
         counter_event[cnt] = 0;
         counter_key[cnt] = gator_events_get_key();
+	//printk("mali_4xx,key:%lu"counter_key[cnt]);
         atomic_set(&counter_data[cnt], 0);
     }
 

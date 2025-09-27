@@ -23,6 +23,17 @@
 #include "gator_events_mali_common.h"
 #endif
 
+
+//ehsan
+int idx[720]={-1};
+long long dd[158]={0};
+long long ct[158]={0};
+struct semaphore sem;
+struct semaphore usem;
+//bool wtg=0;
+
+
+
 static void marshal_summary(long long timestamp, long long uptime, long long monotonic_delta, const char *uname)
 {
     unsigned long flags;
@@ -82,16 +93,19 @@ static bool marshal_cookie_header(const char *text)
 
 static void marshal_cookie(int cookie, const char *text)
 {
+/*
     int cpu = get_physical_cpu();
-    /* buffer_check_space already called by marshal_cookie_header */
+    //buffer_check_space already called by marshal_cookie_header 
     gator_buffer_write_packed_int(cpu, NAME_BUF, MESSAGE_COOKIE);
     gator_buffer_write_packed_int(cpu, NAME_BUF, cookie);
     gator_buffer_write_string(cpu, NAME_BUF, text);
     buffer_check(cpu, NAME_BUF, gator_get_time());
+*/
 }
 
 static void marshal_thread_name(int pid, char *name)
 {
+/*
     unsigned long flags, cpu;
     u64 time;
 
@@ -105,11 +119,12 @@ static void marshal_thread_name(int pid, char *name)
         gator_buffer_write_string(cpu, NAME_BUF, name);
     }
     local_irq_restore(flags);
-    buffer_check(cpu, NAME_BUF, time);
+    buffer_check(cpu, NAME_BUF, time);*/
 }
 
 static void marshal_link(int cookie, int tgid, int pid)
 {
+/*
     unsigned long cpu = get_physical_cpu(), flags;
     u64 time;
 
@@ -123,16 +138,17 @@ static void marshal_link(int cookie, int tgid, int pid)
         gator_buffer_write_packed_int(cpu, ACTIVITY_BUF, pid);
     }
     local_irq_restore(flags);
-    /* Check and commit; commit is set to occur once buffer is 3/4 full */
-    buffer_check(cpu, ACTIVITY_BUF, time);
+    // Check and commit; commit is set to occur once buffer is 3/4 full 
+    buffer_check(cpu, ACTIVITY_BUF, time);*/
 }
 
 static bool marshal_backtrace_header(int exec_cookie, int tgid, int pid, u64 time)
 {
+/*
     int cpu = get_physical_cpu();
 
     if (!buffer_check_space(cpu, BACKTRACE_BUF, MAXSIZE_PACK64 + 5 * MAXSIZE_PACK32 + gator_backtrace_depth * 2 * MAXSIZE_PACK32)) {
-        /* Check and commit; commit is set to occur once buffer is 3/4 full */
+        // Check and commit; commit is set to occur once buffer is 3/4 full 
         buffer_check(cpu, BACKTRACE_BUF, time);
 
         return false;
@@ -142,118 +158,226 @@ static bool marshal_backtrace_header(int exec_cookie, int tgid, int pid, u64 tim
     gator_buffer_write_packed_int(cpu, BACKTRACE_BUF, exec_cookie);
     gator_buffer_write_packed_int(cpu, BACKTRACE_BUF, tgid);
     gator_buffer_write_packed_int(cpu, BACKTRACE_BUF, pid);
-
+*/
     return true;
+
 }
 
 static void marshal_backtrace(unsigned long address, int cookie, int in_kernel)
 {
+/*
     int cpu = get_physical_cpu();
 
     if (cookie == 0 && !in_kernel)
         cookie = UNRESOLVED_COOKIE;
     gator_buffer_write_packed_int(cpu, BACKTRACE_BUF, cookie);
     gator_buffer_write_packed_int64(cpu, BACKTRACE_BUF, address);
+*/
 }
 
 static void marshal_backtrace_footer(u64 time)
 {
+/*
     int cpu = get_physical_cpu();
 
     gator_buffer_write_packed_int(cpu, BACKTRACE_BUF, MESSAGE_END_BACKTRACE);
 
-    /* Check and commit; commit is set to occur once buffer is 3/4 full */
+    // Check and commit; commit is set to occur once buffer is 3/4 full 
     buffer_check(cpu, BACKTRACE_BUF, time);
+*/
 }
 
 static bool marshal_event_header(u64 time)
 {
+/*
     unsigned long flags, cpu = get_physical_cpu();
     bool retval = false;
 
     local_irq_save(flags);
     if (buffer_check_space(cpu, BLOCK_COUNTER_BUF, MAXSIZE_PACK32 + MAXSIZE_PACK64)) {
-        gator_buffer_write_packed_int(cpu, BLOCK_COUNTER_BUF, 0);   /* key of zero indicates a timestamp */
+        gator_buffer_write_packed_int(cpu, BLOCK_COUNTER_BUF, 0);   // key of zero indicates a timestamp 
         gator_buffer_write_packed_int64(cpu, BLOCK_COUNTER_BUF, time);
         retval = true;
     }
     local_irq_restore(flags);
 
-    return retval;
+    return retval;*/
+	return true;
 }
 
 static void marshal_event(int len, int *buffer)
 {
-    unsigned long i, flags, cpu = get_physical_cpu();
+    
+    //unsigned long i, ii, cpu=get_physical_cpu();
+    int ii; 	
+    int i;
+    //unsigned long i, flags, cpu = get_physical_cpu();    
+   // if (len <= 0)
+     //   return;
 
-    if (len <= 0)
-        return;
+    // length must be even since all data is a (key, value) pair 
+   // if (len & 0x1) {
+     //   pr_err("gator: invalid counter data detected and discarded\n");
+       // return;
+    //}
 
-    /* length must be even since all data is a (key, value) pair */
-    if (len & 0x1) {
-        pr_err("gator: invalid counter data detected and discarded\n");
-        return;
-    }
+    
+    // events must be written in key,value pairs 
+    //local_irq_save(flags);
+    unsigned long cpu=get_physical_cpu();
 
-    /* events must be written in key,value pairs */
-    local_irq_save(flags);
     for (i = 0; i < len; i += 2) {
-        if (!buffer_check_space(cpu, BLOCK_COUNTER_BUF, 2 * MAXSIZE_PACK32))
-            break;
-        gator_buffer_write_packed_int(cpu, BLOCK_COUNTER_BUF, buffer[i]);
-        gator_buffer_write_packed_int(cpu, BLOCK_COUNTER_BUF, buffer[i + 1]);
+     
+       // if (!buffer_check_space(cpu, BLOCK_COUNTER_BUF, 2 * MAXSIZE_PACK32))
+         //   break;
+        //gator_buffer_write_packed_int(cpu, BLOCK_COUNTER_BUF, buffer[i]);
+        //gator_buffer_write_packed_int(cpu, BLOCK_COUNTER_BUF, buffer[i + 1]);
+	//printk("gator_marshaling_event,key:%u",buffer[i]);
+
+	//ehsan
+
+	//if(buffer[i]==3)
+	//	printk("are, key:%d,value:%d",buffer[i],buffer[i+1]);
+
+	ii=idx[buffer[i]];
+
+	if(ii>-1){
+		if(ii<80)
+			ii+=cpu;
+
+		/*if(buffer[i]==3 || buffer[i]==17)
+			printk("key:%d,mapkey:%d,value:%d,cpu:%lu",buffer[i],ii,buffer[i+1],cpu);*/
+
+
+		up(&sem);
+		//while(wtg){};
+		dd[ii]+=buffer[i+1];
+		ct[ii]++;
+		down(&sem);
+	}
+	
     }
-    local_irq_restore(flags);
+    //local_irq_restore(flags);
 }
 
 static void marshal_event64(int len, long long *buffer64)
 {
-    unsigned long i, flags, cpu = get_physical_cpu();
+    
+    //unsigned long i, ii, cpu=get_physical_cpu();
+    int ii;
+    //unsigned long i, flags, cpu = get_physical_cpu();//
+    //if (len <= 0)
+      //  return;
 
-    if (len <= 0)
-        return;
+    // length must be even since all data is a (key, value) pair 
+    //if (len & 0x1) {
+      //  pr_err("gator: invalid counter data detected and discarded\n");
+        //return;
+    //}
 
-    /* length must be even since all data is a (key, value) pair */
-    if (len & 0x1) {
-        pr_err("gator: invalid counter data detected and discarded\n");
-        return;
-    }
-
-    /* events must be written in key,value pairs */
-    local_irq_save(flags);
+    // events must be written in key,value pairs 
+    //local_irq_save(flags);
+    int i;
+    unsigned long int cpu=get_physical_cpu();
     for (i = 0; i < len; i += 2) {
-        if (!buffer_check_space(cpu, BLOCK_COUNTER_BUF, 2 * MAXSIZE_PACK64))
-            break;
-        gator_buffer_write_packed_int64(cpu, BLOCK_COUNTER_BUF, buffer64[i]);
-        gator_buffer_write_packed_int64(cpu, BLOCK_COUNTER_BUF, buffer64[i + 1]);
+
+       // if (!buffer_check_space(cpu, BLOCK_COUNTER_BUF, 2 * MAXSIZE_PACK64))
+         //   break;
+
+        //gator_buffer_write_packed_int64(cpu, BLOCK_COUNTER_BUF, buffer64[i]);
+        //gator_buffer_write_packed_int64(cpu, BLOCK_COUNTER_BUF, buffer64[i + 1]);
+	//printk("gator_marshaling_event64,key:%lu",buffer64[i]);
+
+	//ehsan
+	//if(buffer64[i]==3)
+	//	printk("are, key:%lld,value:%lld",buffer64[i],buffer64[i+1]);
+
+	
+	ii=idx[buffer64[i]];
+	if(ii>-1){
+		if(ii<80)
+			ii+=cpu;
+		/*if(buffer64[i]==3 || buffer64[i]==17)
+			printk("key:%lld,mapkey:%d,value:%lld,cpu:%lu",buffer64[i],ii,buffer64[i+1],cpu);*/
+
+		up(&sem);
+		//while(wtg){};
+		dd[ii]+=buffer64[i+1];
+		ct[ii]++;
+		
+		down(&sem);
+	}
+	
     }
-    local_irq_restore(flags);
+    //local_irq_restore(flags);
 }
 
 static void __maybe_unused marshal_event_single(int core, int key, int value)
 {
-    unsigned long flags, cpu;
-    u64 time;
+    //unsigned long flags, cpu;
+    //u64 time;
+    int ii;
+    //local_irq_save(flags);
+    //unsigned long cpu = get_physical_cpu();
+    //time = gator_get_time();
+ 
+	//ehsan
 
-    local_irq_save(flags);
-    cpu = get_physical_cpu();
-    time = gator_get_time();
-    if (buffer_check_space(cpu, COUNTER_BUF, MAXSIZE_PACK64 + 3 * MAXSIZE_PACK32)) {
+   /*if(key==103 || key==101){
+	printk("freqs,%d:%d,core:%ld",key,value,cpu);
+
+    }*/
+
+	
+	ii=idx[key];
+	if(ii>-1){
+		if(ii<80)
+			ii+=core;
+		up(&sem);
+		//while(wtg){};
+		dd[ii]+=value;
+		ct[ii]++;	
+		down(&sem);
+	}
+	
+    /*if (buffer_check_space(cpu, COUNTER_BUF, MAXSIZE_PACK64 + 3 * MAXSIZE_PACK32)) {
         gator_buffer_write_packed_int64(cpu, COUNTER_BUF, time);
         gator_buffer_write_packed_int(cpu, COUNTER_BUF, core);
         gator_buffer_write_packed_int(cpu, COUNTER_BUF, key);
+	//printk("gator_marshaling_event_single,key:%u",key);
         gator_buffer_write_packed_int(cpu, COUNTER_BUF, value);
     }
     local_irq_restore(flags);
-    /* Check and commit; commit is set to occur once buffer is 3/4 full */
-    buffer_check(cpu, COUNTER_BUF, time);
+    // Check and commit; commit is set to occur once buffer is 3/4 full 
+    buffer_check(cpu, COUNTER_BUF, time);*/
 }
 
 static void __maybe_unused marshal_event_single64(int core, int key, long long value)
 {
-    unsigned long flags, cpu;
-    u64 time;
 
+
+
+
+   //unsigned long flags, cpu;
+
+	//ehsan
+	int ii;
+	ii=idx[key];
+	if(ii>-1){
+		if(ii<80)
+			ii+=core;
+		//while(wtg){};
+		up(&sem);
+		dd[ii]+=value;
+		ct[ii]++;
+		down(&sem);
+	}
+   /*if(key==103 || key==101){
+	printk("freqs64,%d:%lld,core:%ld",key,value,cpu);
+
+    }*/
+    /*
+    u64 time;
     local_irq_save(flags);
     cpu = get_physical_cpu();
     time = gator_get_time();
@@ -261,36 +385,119 @@ static void __maybe_unused marshal_event_single64(int core, int key, long long v
         gator_buffer_write_packed_int64(cpu, COUNTER_BUF, time);
         gator_buffer_write_packed_int(cpu, COUNTER_BUF, core);
         gator_buffer_write_packed_int(cpu, COUNTER_BUF, key);
+		//printk("gator_marshaling_event_single64,key:%u",key);
         gator_buffer_write_packed_int64(cpu, COUNTER_BUF, value);
     }
     local_irq_restore(flags);
-    /* Check and commit; commit is set to occur once buffer is 3/4 full */
-    buffer_check(cpu, COUNTER_BUF, time);
+    // Check and commit; commit is set to occur once buffer is 3/4 full 
+    buffer_check(cpu, COUNTER_BUF, time);*/
 }
+
+long long int idletime[8]={0};
+
+static void update_idle(int pid_,int state_,u64 time, int cpu,bool real){
+	//u64 time = gator_get_time();
+	static bool measure[8]={false};
+	static u64 ptime[8];
+	static int pid;
+	static int state;
+	if(real){
+		pid=pid_;
+		state=state_;
+	}
+	if(measure[cpu]){
+		if(real){
+			measure[cpu]=false;
+			idletime[cpu]+=time-ptime[cpu];
+		}
+		else{
+			idletime[cpu]+=time-ptime[cpu];
+			ptime[cpu]=time;
+		}
+	}
+	else{
+		if(real){
+			if(pid==0 && state==0){
+				measure[cpu]=1;
+				ptime[cpu]=time;
+			}
+		}
+	}
+
+
+}
+
+
 
 static void marshal_sched_trace_switch(int pid, int state)
 {
-    unsigned long cpu = get_physical_cpu(), flags;
+    //ehsan
+   //// static bool measure[8]={false};
+    ////static u64 ptime[8];
     u64 time;
-
-    if (!per_cpu(gator_buffer, cpu)[SCHED_TRACE_BUF])
-        return;
-
-    local_irq_save(flags);
+    //static int pid;
+    //static int state;
+	
+    unsigned long cpu = get_physical_cpu();//, flags;
     time = gator_get_time();
-    if (buffer_check_space(cpu, SCHED_TRACE_BUF, MAXSIZE_PACK64 + 5 * MAXSIZE_PACK32)) {
-        gator_buffer_write_packed_int(cpu, SCHED_TRACE_BUF, MESSAGE_SCHED_SWITCH);
-        gator_buffer_write_packed_int64(cpu, SCHED_TRACE_BUF, time);
-        gator_buffer_write_packed_int(cpu, SCHED_TRACE_BUF, pid);
-        gator_buffer_write_packed_int(cpu, SCHED_TRACE_BUF, state);
+    up(&usem);
+    update_idle(pid,state,time,cpu,1);
+    down(&usem);
+   /* if(!a){
+	pid=pid_;
+	state=state_;
+    } */  
+
+   /*
+    if (!per_cpu(gator_buffer, cpu)[SCHED_TRACE_BUF])
+	return;
+    local_irq_save(flags);
+   */
+    
+
+    //ehsan
+    /*
+    if (measure[cpu]){
+	if(pid!=0 || state!=0){
+		//time = gator_get_time();
+		up(&sem);
+		idletime[cpu]+=time-ptime[cpu];
+		down(&sem);
+		measure[cpu]=false;
+	}
     }
+    
+    else if(pid==0 && state==0){
+	//if(measure[cpu]){
+	//	time = gator_get_time();
+	//	up(&sem);
+	//	idletime[cpu]+=time-ptime[cpu];
+	//	down(&sem);
+	//}
+	measure[cpu]=true;
+	ptime[cpu]=time;
+    }
+   
+    */
+    
+	/*
+    if (buffer_check_space(cpu, SCHED_TRACE_BUF, MAXSIZE_PACK64 + 5 * MAXSIZE_PACK32)) {
+	gator_buffer_write_packed_int(cpu, SCHED_TRACE_BUF, MESSAGE_SCHED_SWITCH);
+	gator_buffer_write_packed_int64(cpu, SCHED_TRACE_BUF, time);
+	gator_buffer_write_packed_int(cpu, SCHED_TRACE_BUF, pid);
+	gator_buffer_write_packed_int(cpu, SCHED_TRACE_BUF, state);
+    }
+    
     local_irq_restore(flags);
-    /* Check and commit; commit is set to occur once buffer is 3/4 full */
-    buffer_check(cpu, SCHED_TRACE_BUF, time);
+    // Check and commit; commit is set to occur once buffer is 3/4 full 
+    buffer_check(cpu, SCHED_TRACE_BUF, time);*/
+    
 }
 
 static void marshal_sched_trace_exit(int tgid, int pid)
 {
+/*
+   
     unsigned long cpu = get_physical_cpu(), flags;
     u64 time;
 
@@ -299,19 +506,22 @@ static void marshal_sched_trace_exit(int tgid, int pid)
 
     local_irq_save(flags);
     time = gator_get_time();
+	
     if (buffer_check_space(cpu, SCHED_TRACE_BUF, MAXSIZE_PACK64 + 2 * MAXSIZE_PACK32)) {
         gator_buffer_write_packed_int(cpu, SCHED_TRACE_BUF, MESSAGE_SCHED_EXIT);
         gator_buffer_write_packed_int64(cpu, SCHED_TRACE_BUF, time);
         gator_buffer_write_packed_int(cpu, SCHED_TRACE_BUF, pid);
     }
     local_irq_restore(flags);
-    /* Check and commit; commit is set to occur once buffer is 3/4 full */
-    buffer_check(cpu, SCHED_TRACE_BUF, time);
+    // Check and commit; commit is set to occur once buffer is 3/4 full 
+    buffer_check(cpu, SCHED_TRACE_BUF, time);*/
+	
 }
 
 #if GATOR_CPU_FREQ_SUPPORT
 static void marshal_idle(int core, int state)
 {
+	/*
     unsigned long flags, cpu;
     u64 time;
 
@@ -324,8 +534,8 @@ static void marshal_idle(int core, int state)
         gator_buffer_write_packed_int(cpu, IDLE_BUF, core);
     }
     local_irq_restore(flags);
-    /* Check and commit; commit is set to occur once buffer is 3/4 full */
-    buffer_check(cpu, IDLE_BUF, time);
+    // Check and commit; commit is set to occur once buffer is 3/4 full 
+    buffer_check(cpu, IDLE_BUF, time);*/
 }
 #endif
 
@@ -348,8 +558,11 @@ static void marshal_core_name(const int core, const int cpuid, const char *name)
 }
 #endif
 
+
+/*
 static void marshal_activity_switch(int core, int key, int activity, int pid, int state)
 {
+	
     unsigned long cpu = get_physical_cpu(), flags;
     u64 time;
 
@@ -366,14 +579,17 @@ static void marshal_activity_switch(int core, int key, int activity, int pid, in
         gator_buffer_write_packed_int(cpu, ACTIVITY_BUF, activity);
         gator_buffer_write_packed_int(cpu, ACTIVITY_BUF, pid);
         gator_buffer_write_packed_int(cpu, ACTIVITY_BUF, state);
+	//if(key>98 && key<132)
+	//printk("gator_marshaling_activity_switch,key:%u",key);
     }
     local_irq_restore(flags);
-    /* Check and commit; commit is set to occur once buffer is 3/4 full */
+    // Check and commit; commit is set to occur once buffer is 3/4 full 
     buffer_check(cpu, ACTIVITY_BUF, time);
 }
+*/
 
 void gator_marshal_activity_switch(int core, int key, int activity, int pid)
 {
     /* state is reserved for cpu use only */
-    marshal_activity_switch(core, key, activity, pid, 0);
+    //marshal_activity_switch(core, key, activity, pid, 0);
 }

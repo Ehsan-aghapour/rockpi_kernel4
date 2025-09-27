@@ -157,6 +157,6 @@ int gator_events_block_init(void)
 
     block_rq_wr_key = gator_events_get_key();
     block_rq_rd_key = gator_events_get_key();
-
+    //printk("events_block,key1:%lu,key2:%lu",block_rq_wr_key,block_rq_rd_key);
     return gator_events_install(&gator_events_block_interface);
 }

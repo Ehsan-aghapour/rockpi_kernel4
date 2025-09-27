@@ -25,6 +25,7 @@
 
 #define MAXSIZE_CORE_NAME 32
 
+//Ehsan
 /*
 struct couner_data{
 	int key;
@@ -32,11 +33,22 @@ struct couner_data{
 	int cnts;
 };
 extern struct counter_data counters[100];*/
-
 //extern int counters[100][2];
-extern int dd2[1000];
+//extern int dd2[1000];
+//ehsan
+#include <linux/semaphore.h>
+//sem_t mmm;
+extern struct semaphore sem;
+extern struct semaphore usem;
+//extern bool wtg;
+extern long long int idletime[8];
+extern int idx[720];
+extern long long dd[158];
+extern long long ct[158];
 //extern int ct2[1000]={0};
-
+////extern long long maxdd[158];
+////extern long long maxct[158];
+//Ehsan
 
 struct gator_cpu {
     struct list_head list;

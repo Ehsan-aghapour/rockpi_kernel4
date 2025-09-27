@@ -121,16 +121,16 @@ static int pandoon_close(struct inode *i, struct file *f)
 
 static struct file_operations dev_fops = {
         .open = pandoon_open,
-	.owner=THIS_MODULE,
+		.owner=THIS_MODULE,
         .read = read_proc,
         .write = write_proc,
 #ifdef CONFIG_COMPAT
-	.compat_ioctl = my_ioctl,
+		.compat_ioctl = my_ioctl,
 #endif
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,35))
-	.ioctl = my_ioctl,
+		.ioctl = my_ioctl,
 #else
-	.unlocked_ioctl = my_ioctl,
+		.unlocked_ioctl = my_ioctl,
 #endif
         .release = pandoon_close
 };
@@ -159,32 +159,32 @@ static ssize_t write_proc(struct file *filp, const char *buff, size_t len, loff_
 {
     printk(KERN_INFO "proc file wrote.....\n");
     if(copy_from_user(&value,buff,sizeof(value))){
-	printk("write error\n");
-	return -1;
+		printk("write error\n");
+		return -1;
     }
     printk(KERN_INFO "value=%c\n",value);
     if (value=='0'){
-	prnt=false;
-	upd=false;
-	freqs.capturing=0;
-	printk("capture off, update manner off");
+		prnt=false;
+		upd=false;
+		freqs.capturing=0;
+		printk("capture off, update manner off");
     }
     if (value=='1'){
-	upd=false;
-	freqs.capturing=1;
-	printk("capture on, update manner off");
+		upd=false;
+		freqs.capturing=1;
+		printk("capture on, update manner off");
     }
     if (value=='2'){
-	upd=true;
-	printk("update manner on");
+		upd=true;
+		printk("update manner on");
     }
     if (value=='3'){
-	upd=true;
-	freqs.capturing=1;
-	printk("capture on, update manner on");
+		upd=true;
+		freqs.capturing=1;
+		printk("capture on, update manner on");
     }
     if (value=='4'){
-	prnt=true;
+    	prnt=true;
     }
 
 
@@ -418,12 +418,14 @@ static int devfreq_pandoon_func(struct devfreq *df,
 		//pthread_t pt;
 		wait_thread=kthread_create(func,(void*)df,"wthread");
 		if (wait_thread) {
-	                printk("Thread Created successfully\n");
-        	        wake_up_process(wait_thread);
-        	} else
-                	printk(KERN_INFO "Thread creation failed\n");
+				printk("Thread Created successfully\n");
+				wake_up_process(wait_thread);
+		}
+		else
+                printk(KERN_INFO "Thread creation failed\n");
 		return 0;
-	}else
+	}
+	else
 		return 0;
 
 

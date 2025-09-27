@@ -66,6 +66,7 @@ extern void gator_mali_initialise_counters(struct mali_counter counters[], unsig
         struct mali_counter *counter = &counters[cnt];
 
         counter->key = gator_events_get_key();
+	//printk("mali_common,key:%lu",counter->key);
         counter->enabled = 0;
         counter->cores = -1;
     }

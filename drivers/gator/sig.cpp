@@ -32,7 +32,7 @@ int main(){
 	myfile.open("./times.txt");
 	int fddd;
 	//f freqs;
-	int *data[1000]={0};
+	int data[1000]={0};
 	timespec t_p,t_n;
 	unsigned long int ioctltime=0;
 	fddd = open("/proc/gator_data", O_RDWR);
@@ -41,7 +41,7 @@ int main(){
 	while(true){
 		clock_gettime(CLOCK_MONOTONIC, &t_p);		
 		//ioctl(fddd, next_state);
-		ioctl(fddd,capture_data,data);
+		ioctl(fddd,capture_data,&data);
 		//ioctl(fddd,capture_freqs, &freqs);
 		clock_gettime(CLOCK_MONOTONIC, &t_n);	
 		ioctltime=diff_time(t_p,t_n);

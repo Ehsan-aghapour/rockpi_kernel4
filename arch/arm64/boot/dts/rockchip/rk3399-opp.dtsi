@@ -66,6 +66,29 @@
 			143501   148500   1
 			148501   152000   2
 			152001   999999   3
+		>;cluster0_opp: opp-table0 {
+		compatible = "operating-points-v2";
+		opp-shared;
+
+		rockchip,temp-hysteresis = <5000>;
+		rockchip,low-temp = <0>;
+		rockchip,low-temp-min-volt = <900000>;
+
+		nvmem-cells = <&cpul_leakage>, <&specification_serial_number>;
+		nvmem-cell-names = "cpu_leakage",
+				   "specification_serial_number";
+		clocks = <&cru PLL_APLLL>;
+		rockchip,avs-scale = <20>;
+		rockchip,bin-scaling-sel = <
+			0	30
+			1	34
+		>;
+
+		rockchip,pvtm-voltage-sel = <
+			0        143500   0
+			143501   148500   1
+			148501   152000   2
+			152001   999999   3
 		>;
 		rockchip,pvtm-freq = <408000>;
 		rockchip,pvtm-volt = <1000000>;

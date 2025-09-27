@@ -157,7 +157,7 @@ int gator_events_net_init(void)
 {
     netrx_key = gator_events_get_key();
     nettx_key = gator_events_get_key();
-
+    //printk("net,key1:%lu,key2:%lu",netrx_key,nettx_key);
     netrx_enabled = 0;
     nettx_enabled = 0;
 

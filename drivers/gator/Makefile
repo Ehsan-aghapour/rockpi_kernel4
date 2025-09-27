@@ -20,7 +20,12 @@ silent_chk_events.h = :
 CONFIG_GATOR_MALI_4XXMP := n
 CONFIG_GATOR_MALI_MIDGARD := y
 EXTRA_CFLAGS += -DMALI_SUPPORT=MALI_MIDGARD_OR_BIFROST
+#CONFIG_GATOR_MALI_MIDGARD_PATH ?= drivers/gpu/arm/bifrost-hikey970
+
 CONFIG_GATOR_MALI_MIDGARD_PATH ?= drivers/gpu/arm/midgard
+GATOR_WITH_MALI_SUPPORT=MALI_MIDGARD
+
+
 gator-y +=  gator_events_mali_midgard.o \
      	gator_events_mali_midgard_hw.o
 include $(src)/mali_midgard.mk
@@ -53,5 +58,16 @@ $(obj)/generated_gator_src_md5.h: $(wildcard $(src)/gator_*.h $(src)/gator_*.c $
 	@$($(quiet)chk_events.h)
 	$(Q)cd $(srctree) && cd $(src) ; $(CONFIG_SHELL) -c "echo 'static char * gator_src_md5 = \"'\`ls gator_*.c gator_*.h mali/*.h | grep -Ev '^(generated_gator_src_md5\.h|gator\.mod\.c)$$' | LC_ALL=C sort | xargs cat | md5sum | cut -b 1-32\`'\";'" > $(abspath $@)
 
+
+all:
+	@echo
+	@echo "usage:"
+	@echo "      make -C <kernel_build_dir> M=\`pwd\` ARCH=arm CROSS_COMPILE=<...> modules"
+	@echo
+	$(error)
+
+clean:
+	rm -f *.o .*.cmd generated_gator_src_md5.h modules.order Module.symvers gator.ko gator.mod.c
+	rm -rf .tmp_versions
 
 

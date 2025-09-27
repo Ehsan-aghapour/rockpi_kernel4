@@ -180,7 +180,7 @@ int gator_events_irq_init(void)
     for (i = 0; i < gator_cluster_count; i++) {
         hardirq_key[i] = gator_events_get_key();
         softirq_key[i] = gator_events_get_key();
-
+	//printk("events_irq,key1:%lu,key2:%lu",hardirq_key[i],softirq_key[i]);
         hardirq_enabled[i] = 0;
         softirq_enabled[i] = 0;
     }

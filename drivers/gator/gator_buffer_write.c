@@ -12,12 +12,18 @@
 
 static void gator_buffer_write_packed_int(int cpu, int buftype, int x)
 {
+    //printk("salam%d",tt);
     uint32_t write = per_cpu(gator_buffer_write, cpu)[buftype];
     uint32_t mask = gator_buffer_mask[buftype];
     char *buffer = per_cpu(gator_buffer, cpu)[buftype];
     int packedBytes = 0;
     int more = true;
-
+    /*if(x>98 && x<132 && tt!=46 && tt!=3)
+	if(tt!=13 && tt!=10)
+	 	if(!(tt==16 && x==115))
+			if(!(tt==21 && x==99))
+				if(!(tt==21 && x==101))
+					printk("inja1,x=%d,tt=%d",x,tt);*/
     while (more) {
         /* low order 7 bits of x */
         char b = x & 0x7f;
@@ -43,6 +49,14 @@ static void gator_buffer_write_packed_int64(int cpu, int buftype, long long x)
     char *buffer = per_cpu(gator_buffer, cpu)[buftype];
     int packedBytes = 0;
     int more = true;
+    //if(x==107 || x==99 || x==103)
+	//printk("inja,x=%lld",x);
+    /*if(x>98 && x<132 && tt!=46 && tt!=3)
+	if(tt!=13 && tt!=10)
+	 	if(!(tt==16 && x==115))
+			if(!(tt==21 && x==99))
+				if(!(tt==21 && x==101))
+					printk("inja2,x=%llu,tt=%d",x,tt);*/
 
     while (more) {
         /* low order 7 bits of x */

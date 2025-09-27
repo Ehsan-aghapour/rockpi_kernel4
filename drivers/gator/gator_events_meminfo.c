@@ -423,12 +423,14 @@ int gator_events_meminfo_init(void)
     for (i = 0; i < MEMINFO_TOTAL; i++) {
         meminfo_enabled[i] = 0;
         meminfo_keys[i] = gator_events_get_key();
+	//printk("meminfo,key:%lu",meminfo_keys[i]);
     }
 
     proc_global_enabled = 0;
     for (i = 0; i < PROC_COUNT; ++i) {
         proc_enabled[i] = 0;
         proc_keys[i] = gator_events_get_key();
+	//printk("meminfo,key:%lu",proc_keys[i]);
     }
 
     return gator_events_install(&gator_events_meminfo_interface);

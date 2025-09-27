@@ -59,6 +59,8 @@ static int gator_events_l2c310_create_files(struct super_block *sb,
                      &l2c310_counters[i].event);
         gatorfs_create_ro_ulong(sb, dir, "key",
                     &l2c310_counters[i].key);
+
+	//printk("gator_events_l2c-310,enable:%lu,key:%lu,event:%lu",l2c310_counters[i].enabled,l2c310_counters[i].key,l2c310_counters[i].event);
     }
 
     return 0;
